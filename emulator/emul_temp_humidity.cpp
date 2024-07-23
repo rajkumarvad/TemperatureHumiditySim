@@ -28,7 +28,7 @@ void generate_and_send_data(const std::string &endpoint) {
     int humidity = humidity_dist(gen);
     send_data_to_cloud(endpoint, temp, humidity);
 }
-
+//Timer ISR
 void start_timer(const std::string &endpoint) {
     while (timer_running) {
         generate_and_send_data(endpoint);
@@ -38,7 +38,7 @@ void start_timer(const std::string &endpoint) {
 
 int main() {
     httplib::Server server;
-
+    //HTTP endpoint handling START msg from cloud
     server.Get("/START", [](const httplib::Request &, httplib::Response &res) {
         if (!timer_running) {
             timer_running = true;
@@ -46,12 +46,14 @@ int main() {
         }
         res.set_content("Timer started", "text/plain");
     });
-
+    
+    //HTTP endpoint handling STOP msg from cloud
     server.Get("/STOP", [](const httplib::Request &, httplib::Response &res) {
         timer_running = false;
         res.set_content("Timer stopped", "text/plain");
     });
-
+    
+    //HTTP endpoint handling STATUS msg from cloud
     server.Get("/STATUS", [](const httplib::Request &, httplib::Response &res) {
         generate_and_send_data("/temp");
         res.set_content("Status sent to cloud", "text/plain");
